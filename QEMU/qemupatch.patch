@@ -1,0 +1,34 @@
+--- a/qemupatch.sh	2025-08-24 01:25:26.267510858 +0530
++++ b/qemupatch.sh	2025-08-24 01:25:53.652779750 +0530
+@@ -1340,31 +1340,3 @@
+ sed -i "$file_kvm" -Ee "s/\"XenVMMXenVMM\"/\"\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/"
+ echo "KVMKVMKVM\0\0\0                                 -> ${cpu_vendor:1}"
+ sed -i "$file_kvm" -Ee "s/KVMKVMKVM\\\\0\\\\0\\\\0/${cpu_vendor:1}/"
+-
+-read -p $'Continue? [y/\e[1mN\e[0m]> ' -n 1 -r
+-if [[ $REPLY =~ ^[Yy]$ ]]; then
+-  echo ""
+-else
+-  echo ""
+-  exit 0
+-fi
+-
+-cd qemu
+-./configure --target-list=x86_64-softmmu
+-cd build
+-make
+-#iasl "$file_ssdt1"
+-#iasl "$file_ssdt2"
+-
+-sudo cp -f "$(pwd)/qemu-system-x86_64" "$QEMU_DEST"
+-sudo cp -f "$(pwd)/../ssdt1.aml" "$QEMU_DEST"
+-sudo cp -f "$(pwd)/../ssdt2.aml" "$QEMU_DEST"
+-echo "$QEMU_DEST/qemu-system-x86_64"
+-echo "$QEMU_DEST/ssdt1.aml"
+-echo "$QEMU_DEST/ssdt2.aml"
+-
+-sudo mkdir -p /usr/local/share/qemu
+-sudo cp -f "../pc-bios/kvmvapic.bin" "/usr/local/share/qemu/kvmvapic.bin"
+-sudo cp -f "../pc-bios/efi-e1000e.rom" "/usr/local/share/qemu/efi-e1000e.rom"
+-sudo cp -f "../pc-bios/vgabios-stdvga.bin" "/usr/local/share/qemu/vgabios-stdvga.bin"
+-#sudo cp -fr "../pc-bios/." "/usr/local/share/qemu/."

@@ -1,0 +1,43 @@
+--- a/edk2patch.sh	2025-08-24 02:57:59.664345290 +0530
++++ b/edk2patch.sh	2025-08-24 02:58:28.085573413 +0530
+@@ -225,40 +225,3 @@
+ echo "  $file_ShellPkg"
+ echo "\"EDK II\"                             -> \"American Megatrends Inc.\""
+   sed -i "$file_ShellPkg" -Ee "s/\"EDK II\"/\"American Megatrends Inc.\"/"
+-
+-read -p $'Continue? [y/\e[1mN\e[0m]> ' -n 1 -r
+-if [[ $REPLY =~ ^[Yy]$ ]]; then
+-  echo ""
+-else
+-  echo ""
+-  exit 0
+-fi
+-
+-cd edk2
+-export WORKSPACE="$(pwd)"
+-export EDK_TOOLS_PATH="${WORKSPACE}/BaseTools"
+-export CONF_PATH="${WORKSPACE}/Conf"
+-
+-echo "Building BaseTools (EDK II build tools)..."
+-make -C BaseTools; source edksetup.sh
+-
+-echo "Compiling OVMF firmware with Secure Boot and TPM support..."
+-build \
+-  -a X64 \
+-  -p OvmfPkg/OvmfPkgX64.dsc \
+-  -b RELEASE \
+-  -t GCC5 \
+-  -n 0 \
+-  -s \
+-  -q \
+-  --define SECURE_BOOT_ENABLE=TRUE \
+-  --define TPM_CONFIG_ENABLE=TRUE \
+-  --define TPM_ENABLE=TRUE \
+-  --define TPM1_ENABLE=TRUE \
+-  --define TPM2_ENABLE=TRUE
+-
+-sudo mkdir -p "$EDK2_DEST"
+-sudo cp -f "Build/OvmfX64/RELEASE_GCC5/FV/OVMF_CODE.fd" "$CODE_DEST"
+-sudo cp -f "Build/OvmfX64/RELEASE_GCC5/FV/OVMF_VARS.fd" "$VARS_DEST"
+-echo "$CODE_DEST"
+-echo "$VARS_DEST"

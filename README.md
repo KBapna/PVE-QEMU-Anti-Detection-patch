@@ -118,6 +118,14 @@ machine: pc-q35-9.2+pve1,enable-s3=1,enable-s4=1
 - SMBIOS spoofing to mask virtualization
 
 
+## Restore Official Packages (If Needed)
+
+```bash
+apt reinstall pve-qemu-kvm
+apt reinstall pve-edk2-firmware-ovmf
+```
+
+
 ## DISCLAIMER
 
 - This project is for **research and educational purposes** only  

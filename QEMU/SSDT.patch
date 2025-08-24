@@ -1,0 +1,48 @@
+diff -Naur a/hw/i386/acpi-build.c b/hw/i386/acpi-build.c
+--- a/hw/i386/acpi-build.c	2025-07-27 11:24:36.683322254 -0700
++++ b/hw/i386/acpi-build.c	2025-07-27 11:28:15.511520748 -0700
+@@ -79,6 +79,13 @@
+ 
+ #include CONFIG_DEVICES
+ 
++// ACPI Tables Start
++#include "hpet.h"
++
++#include "ssdt1.h"
++#include "ssdt2.h"
++// ACPI Tables End
++
+ /* These are used to size the ACPI tables for -M pc-i440fx-1.7 and
+  * -M pc-i440fx-2.0.  Even if the actual amount of AML generated grows
+  * a little bit, there should be plenty of free space since the DSDT
+@@ -2482,6 +2489,30 @@
+     pm.fadt.xdsdt_tbl_offset = &dsdt;
+     build_fadt(tables_blob, tables->linker, &pm.fadt, oem_id, oem_table_id);
+ 
++    //Inject ACPI Tables Start
++	{
++	    struct AcpiBlob {
++	        const char *name;
++	        const uint8_t *data;
++	        unsigned len;
++	    };
++
++	    const struct AcpiBlob blobs[] = {
++               {"HPET", hpet_aml, hpet_aml_len},
++
++               {"SSDT1", ssdt1_aml, ssdt1_aml_len},
++	        {"SSDT2", ssdt2_aml, ssdt2_aml_len},
++	    };
++
++	    for (size_t i = 0; i < sizeof(blobs) / sizeof(blobs[0]); i++) {
++	        const struct AcpiBlob *b = &blobs[i];
++
++	        acpi_add_table(table_offsets, tables_blob);
++	        g_array_append_vals(tables_blob, b->data, b->len);
++	    }
++	}
++    //Inject ACPI Tables End
++
+     acpi_add_table(table_offsets, tables_blob);
+     acpi_build_madt(tables_blob, tables->linker, x86ms,
+                     x86ms->oem_id, x86ms->oem_table_id);

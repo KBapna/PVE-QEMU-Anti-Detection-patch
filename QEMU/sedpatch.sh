@@ -175,7 +175,6 @@ sed -i "s/\"KVM Virtual/\"${brand}/g" hw/riscv/virt.c
 sed -i "s/\"QEMU/\"${brand}/g" hw/riscv/virt.c
 sed -i "s/\"QEMU/\"${brand}/g" hw/sd/sd.c
 sed -i "s/\"QEMU/\"${brand}/g" hw/ufs/lu.c
-sed -i 's/S%.02X/S%.01X/g' hw/i386/acpi-build.c
 sed -i 's/"WAET"/"WWWT"/g' hw/i386/acpi-build.c
 sed -i 's/!object_dynamic_cast/object_dynamic_cast/g' hw/vfio/igd.c
 sed -i 's/#define PCI_SUBVENDOR_ID_REDHAT_QUMRANET 0x1af4/#define PCI_SUBVENDOR_ID_REDHAT_QUMRANET 0x8086/g' include/hw/pci/pci.h

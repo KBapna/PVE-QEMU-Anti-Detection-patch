@@ -42,7 +42,7 @@ baseboard_location="Type2 - Board Chassis Location"
 
 # Chassis
 chassis_manufacturer="BRAND"
-chassis_type="Desktop/Notebook/ETC"
+chassis_type="Desktop/Notebook"
 chassis_version="MODEL_NAME"
 chassis_serial_number="SERIAL"
 chassis_asset_tag="NO Asset Tag"
@@ -82,11 +82,9 @@ DISK_PRODUCT_ID="0x1729"
 # Network
 net_mac_address="XX-XX-XX-XX-XX-XX"
 
-# Machine GUID
+# Machine
 machine_guid="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-
-# Display
-display_edid_uid0="EDID"
+model_nr_hex="1089"
 
 # --- DERIVED VALUES ---
 brand="${system_manufacturer^^}"
@@ -98,11 +96,15 @@ bios_mfg_short="${bios_manufacturer:0:3}"
 fixed_len_string_14=$(printf "%-14.14s" "$(echo "${bios_manufacturer}${chassis_version}" | tr -d '[:space:]')")
 fixed_len_string_16=$(printf "%-16.16s" "${bios_manufacturer}${bios_serial_number}")
 SERIAL_HEX=$(echo -n "$bios_serial_number" | xxd -p | tr -d '\n' | sed 's/^/0x/;s/$/ULL/')
-model_nr_hex="${display_edid_uid0:2:4}"
 disk_serial_stripped=$(echo "${disk_serial_number}" | tr -d '_.')
 disk_serial_16chars=$(printf "%-16.16s" "${disk_serial_stripped}")
 hub_id_hex=$(echo "${machine_guid}" | tr -d '-' | cut -c 1-6)
 mac_hex=$(echo "${net_mac_address}" | tr -d ':-')
+if [[ "$chassis_type" == "Notebook" ]]; then
+  hex="0x0A"; label="Notebook"
+else
+  hex="0x03"; label="Desktop"
+fi
 
 echo "Starting QEMU patching operations..."
 
@@ -270,7 +272,7 @@ sed -i "s|SMBIOS_TABLE_SET_STR(2, location_str,\"Default string\");|SMBIOS_TABLE
 
 # Type 3 (System Enclosure)
 sed -i "s|SMBIOS_TABLE_SET_STR(3, manufacturer_str, \"Default string\");|SMBIOS_TABLE_SET_STR(3, manufacturer_str, \"${chassis_manufacturer}\");|g" hw/smbios/smbios.c
-sed -i 's/t->type = 0x01; \/\* Other \*\//t->type = 0x0A; \/\* Notebook \*\//g' hw/smbios/smbios.c
+sed -i "s/t->type = 0x[0-9A-Fa-f]\+; \/\* .* \*\//t->type = $hex; \/\* $label \*\//g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(3, version_str, \"Default string\");|SMBIOS_TABLE_SET_STR(3, version_str, \"${chassis_version}\");|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(3, serial_number_str, \"Default string\");|SMBIOS_TABLE_SET_STR(3, serial_number_str, \"${chassis_serial_number}\");|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(3, asset_tag_number_str, \"Default string\");|SMBIOS_TABLE_SET_STR(3, asset_tag_number_str, \"${chassis_asset_tag}\");|g" hw/smbios/smbios.c

@@ -22,7 +22,7 @@ cd PVE-QEMU-Anti-Detection-patch/QEMU
 
 2. Modify the `sedpatch.sh` script:  
 
-- Use the helper script `GetSysInfo.ps1` to fetch most system values on Windows Host. Some values like `BIOS serials`, `chassis_type`, and `EDID` must be set manually.  
+- Use the helper script `GetSysInfo.ps1` to fetch most system values on Windows Host. Some values like `BIOS serials`, and `chassis_type` must be set manually.  
 > Tip: use `dmidecode` to extract BIOS-related info on Linux.
 
 3. Once all values are set in sedpatch.sh run the build script:

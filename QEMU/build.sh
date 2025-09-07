@@ -2,8 +2,8 @@
 apt-get update
 apt-get install wget libacl1-dev libaio-dev libattr1-dev libcap-ng-dev libcurl4-gnutls-dev libepoxy-dev libfdt-dev libgbm-dev libglusterfs-dev libgnutls28-dev libiscsi-dev libjpeg-dev libnuma-dev libpci-dev libpixman-1-dev libproxmox-backup-qemu0-dev librbd-dev libsdl1.2-dev libseccomp-dev libslirp-dev libspice-protocol-dev libspice-server-dev libsystemd-dev liburing-dev libusb-1.0-0-dev libusbredirparser-dev libvirglrenderer-dev meson python3-sphinx python3-sphinx-rtd-theme quilt xfslibs-dev lintian python3-venv xxd bc devscripts -y
 wget https://github.com/lixiaoliu666/pve-anti-detection/raw/refs/heads/main/hpet.aml
-wget https://raw.githubusercontent.com/lixiaoliu666/pve-anti-detection/refs/heads/9.2.0-7/smbios.h
-wget https://raw.githubusercontent.com/lixiaoliu666/pve-anti-detection/refs/heads/9.2.0-7/smbios.c
+wget https://raw.githubusercontent.com/lixiaoliu666/pve-anti-detection/refs/heads/9.2.0-6/smbios.h
+wget https://raw.githubusercontent.com/lixiaoliu666/pve-anti-detection/refs/heads/9.2.0-6/smbios.c
 wget https://github.com/Ape-xCV/Nika-Read-Only/raw/refs/heads/main/qemupatch.sh
 wget https://github.com/Ape-xCV/Nika-Read-Only/raw/refs/heads/main/ssdt1.aml
 wget https://github.com/Ape-xCV/Nika-Read-Only/raw/refs/heads/main/ssdt2.aml

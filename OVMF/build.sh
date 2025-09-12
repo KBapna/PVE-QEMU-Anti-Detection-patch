@@ -15,6 +15,8 @@ cp ../Logo.bmp debian/
 cp ../sedpatch.sh edk2/
 cp ../edk2patch.sh ./
 cd edk2
+sed -i 's/VMMBootOrder%04x/BootOrder%04x/' OvmfPkg/Library/QemuBootOrderLib/QemuBootOrderLib.c
+sed -i 's/for (OptionNumber = 0;/for (OptionNumber = 1;/' MdeModulePkg/Library/UefiBootManagerLib/BmLoadOption.c
 sed -i 's/\(--pcd PcdFirmwareVendor=L"\)[^"]*\\0"/\1INSYDE Corp.\\\\0"/' ../debian/rules
 chmod +x sedpatch.sh
 bash sedpatch.sh

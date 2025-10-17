@@ -255,8 +255,9 @@ sed -i "s|t->embedded_controller_major_release = 0xFF;|t->embedded_controller_ma
 sed -i "s|t->embedded_controller_minor_release = 0xFF;|t->embedded_controller_minor_release = ${bios_minor_release};|g" hw/smbios/smbios.c
 
 # Type 1 (System Information)
+sed -i '/char \*g_type4_version;/n;/void smbios_set_defaults(const char \*manufacturer, const char \*product,/ichar \*g_type4_version;' hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(1, manufacturer_str, \"Maxsun\");|SMBIOS_TABLE_SET_STR(1, manufacturer_str, \"${system_manufacturer}\");|g" hw/smbios/smbios.c
-sed -i "s|SMBIOS_TABLE_SET_STR(1, product_name_str, motherboard);|SMBIOS_TABLE_SET_STR(1, product_name_str, \"${chassis_version}\");|g" hw/smbios/smbios.c
+sed -i "s|SMBIOS_TABLE_SET_STR(1, product_name_str, \".*\"\s*);|SMBIOS_TABLE_SET_STR(1, product_name_str, \"${chassis_version}\");|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(1, version_str, \"VER:H3.7G(2022/11/29)\");|SMBIOS_TABLE_SET_STR(1, version_str, \"${smbios_bios_version}\");|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(1, serial_number_str, \"Default string\");|SMBIOS_TABLE_SET_STR(1, serial_number_str, \"${bios_serial_number}\");|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(1, sku_number_str, \"Default string\");|SMBIOS_TABLE_SET_STR(1, sku_number_str, \"${system_sku}\");|g" hw/smbios/smbios.c
@@ -264,7 +265,7 @@ sed -i "s|SMBIOS_TABLE_SET_STR(1, family_str, \"Default string\");|SMBIOS_TABLE_
 
 # Type 2 (Base Board Information)
 sed -i "s|SMBIOS_TABLE_SET_STR(2, manufacturer_str, \"Maxsun\");|SMBIOS_TABLE_SET_STR(2, manufacturer_str, \"${baseboard_manufacturer}\");|g" hw/smbios/smbios.c
-sed -i "s|SMBIOS_TABLE_SET_STR(2, product_str, motherboard);|SMBIOS_TABLE_SET_STR(2, product_str, \"${baseboard_product}\");|g" hw/smbios/smbios.c
+sed -i "s|SMBIOS_TABLE_SET_STR(2, product_str, \".*\"\s*);|SMBIOS_TABLE_SET_STR(2, product_str, \"${baseboard_product}\");|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(2, version_str, \"VER:H3.7G(2022/11/29)\");|SMBIOS_TABLE_SET_STR(2, version_str, \"${baseboard_version}\");|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(2, serial_number_str, \"Default string\");|SMBIOS_TABLE_SET_STR(2, serial_number_str, \"${baseboard_serial_number}\");|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(2, asset_tag_number_str,\"Default string\");|SMBIOS_TABLE_SET_STR(2, asset_tag_number_str,\"${baseboard_asset_tag}\");|g" hw/smbios/smbios.c
@@ -280,6 +281,10 @@ sed -i "s|t->security_status = 0x03;.*|t->security_status = 0x02; /* None */|g" 
 sed -i "s|SMBIOS_TABLE_SET_STR(3, sku_number_str, \"Default string\");|SMBIOS_TABLE_SET_STR(3, sku_number_str, \"${chassis_sku_number}\");|g" hw/smbios/smbios.c
 
 # Type 4 (Processor Information)
+sed -i '/uint8_t g_type4_family;/n;/static void smbios_build_type_4_table(MachineState \*ms, unsigned instance,/iuint8_t g_type4_family;' hw/smbios/smbios.c
+sed -i '/uint8_t g_type4_upgrade;/n;/static void smbios_build_type_4_table(MachineState \*ms, unsigned instance,/iuint8_t g_type4_upgrade;' hw/smbios/smbios.c
+sed -i '/if (g_type4_family > 0) t->processor_family = g_type4_family;/n;/t->processor_family = 0xfe; \/\* use Processor Family 2 field \*\//a\    if (g_type4_family > 0) t->processor_family = g_type4_family;' hw/smbios/smbios.c
+sed -i '/if (g_type4_upgrade > 0) t->processor_upgrade = g_type4_upgrade;/n;/t->processor_upgrade = 0x01; \/\* Other \*\//a\    if (g_type4_upgrade > 0) t->processor_upgrade = g_type4_upgrade;' hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(4, socket_designation_str, \"LGA1700\");|SMBIOS_TABLE_SET_STR(4, socket_designation_str, \"U3E1\");|g" hw/smbios/smbios.c
 sed -i "s|t->processor_family = 0xC6;|t->processor_family = $(printf "0x%x" ${processor_family});|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_TABLE_SET_STR(4, processor_manufacturer_str, \"Intel(R) Corporation\");|SMBIOS_TABLE_SET_STR(4, processor_manufacturer_str, \"${processor_manufacturer}\");|g" hw/smbios/smbios.c
@@ -298,15 +303,14 @@ sed -i 's/t->external_clock = cpu_to_le16(0);/t->external_clock = cpu_to_le16(10
 sed -i 's/t->voltage = 0;/t->voltage = 0x8B;/g' hw/smbios/smbios.c
 
 # Type 7 (Cache Information)
-sed -i "s|smbios_build_type_7_table(0,\"L1 Cache\",0x180,cores_per_socket\*0x20,0x4,0x4,0x7);|smbios_build_type_7_table(0,\"L1 Cache\",0x180,${l1d_cache_size_kb},0x4,0x4,0x9);|g" hw/smbios/smbios.c
-sed -i "s|smbios_build_type_7_table(1,\"L1 Cache\",0x180,cores_per_socket\*0x20,0x4,0x3,0x7);|smbios_build_type_7_table(1,\"L1 Cache\",0x180,${l1i_cache_size_kb},0x4,0x3,0x7);|g" hw/smbios/smbios.c
-sed -i "s|smbios_build_type_7_table(2,\"L2 Cache\",0x181,cores_per_socket\*0x800,0x5,0x4,0x8);|smbios_build_type_7_table(2,\"L2 Cache\",0x181,${l2_cache_size_kb},0x5,0x5,0x0);|g" hw/smbios/smbios.c
-sed -i "s|smbios_build_type_7_table(3,\"L2 Cache\",0x181,cores_per_socket\*0x800,0x5,0x3,0x8);|smbios_build_type_7_table(3,\"L3 Cache\",0x182,${l3_cache_size_kb},0x6,0x5,0x9);|g" hw/smbios/smbios.c
+sed -i 's/^.*smbios_build_type_7_table(0,"L1 Cache",0x180,cores_per_socket\*0x20,0x4,0x4,0x7);.*$/\tsmbios_build_type_7_table(0, "L1 Instruction", 0x180, 0x0080, 0x04, 0x03, 0x07); \/\/ L1 Instruction 128 KiB/' hw/smbios/smbios.c
+sed -i 's/^.*smbios_build_type_7_table(1,"L1 Cache",0x180,cores_per_socket\*0x20,0x4,0x3,0x7);.*$/\tsmbios_build_type_7_table(1, "L1 Cache", 0x180, 0x0080, 0x04, 0x04, 0x07); \/\/ L1 Data        128 KiB/' hw/smbios/smbios.c
+sed -i 's/^.*smbios_build_type_7_table(2,"L2 Cache",0x181,cores_per_socket\*0x800,0x5,0x4,0x8);.*$/\tsmbios_build_type_7_table(2, "L2 Cache", 0x181, 0x3000, 0x04, 0x05, 0x08); \/\/ L2 Unified      12 MiB/' hw/smbios/smbios.c
+sed -i 's/^.*smbios_build_type_7_table(3,"L2 Cache",0x181,cores_per_socket\*0x800,0x5,0x3,0x8);.*$/\tsmbios_build_type_7_table(3, "L3 Cache", 0x182, 0xFFFF, 0x04, 0x05, 0x08); \/\/ L3 Unified      64 MiB/' hw/smbios/smbios.c
 sed -i "/unsigned cores_per_socket = machine_topo_get_cores_per_socket(ms);/d" hw/smbios/smbios.c
-sed -i '/smbios_build_type_7_table(3,"L2 Cache",0x181,cores_per_socket\*0x800,0x5,0x3,0x8);/d' hw/smbios/smbios.c
-sed -i '/smbios_build_type_7_table(4,"L3 Cache",0x182,0x2000,0x6,0x5,0x8);/d' hw/smbios/smbios.c
-sed -i '/smbios_build_type_7_table(5,"L3 Cache",0x182,0x2000,0x6,0x5,0x8);/d' hw/smbios/smbios.c
-sed -i '/smbios_build_type_7_table(6,"lixiaoliu L4 Cache",0x183,0x4000,0x6,0x5,0x1);/d' hw/smbios/smbios.c
+sed -i '/^.*smbios_build_type_7_table(4,"L3 Cache",0x182,0x2000,0x6,0x5,0x8);.*$/d' hw/smbios/smbios.c
+sed -i '/^.*smbios_build_type_7_table(5,"L3 Cache",0x182,0x2000,0x6,0x5,0x8);.*$/d' hw/smbios/smbios.c
+sed -i '/^.*smbios_build_type_7_table(6,"lixiaoliu L4 Cache",0x183,0x4000,0x6,0x5,0x1);.*$/d' hw/smbios/smbios.c
 
 # Type 16 (Physical Memory Array)
 sed -i "s|t->error_correction = 0x03;|t->error_correction = ${memory_error_correction_type};|g" hw/smbios/smbios.c
@@ -333,7 +337,7 @@ sed -i "s|SMBIOS_SET_DEFAULT(type2.version, \"VER:H3.7G(2022/11/29)\");|SMBIOS_S
 sed -i "s|SMBIOS_SET_DEFAULT(type3.manufacturer, \"Default string\");|SMBIOS_SET_DEFAULT(type3.manufacturer, \"${chassis_manufacturer}\");|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_SET_DEFAULT(type3.version, \"Default string\");|SMBIOS_SET_DEFAULT(type3.version, \"${chassis_version}\");|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_SET_DEFAULT(type4.manufacturer, \"Intel(R) Corporation\");|SMBIOS_SET_DEFAULT(type4.manufacturer, \"${processor_manufacturer}\");|g" hw/smbios/smbios.c
-sed -i "s|SMBIOS_SET_DEFAULT(type4.version, \"12th Gen Intel(R) Core(TM) i7-12700\");|SMBIOS_SET_DEFAULT(type4.version, \"${processor_name}\");|g" hw/smbios/smbios.c
+sed -i "s|SMBIOS_SET_DEFAULT(type4.version, \"12th Gen Intel(R) Core(TM) i7-12700\");|SMBIOS_SET_DEFAULT(type4.version, g_type4_version);|g" hw/smbios/smbios.c
 sed -i "s|SMBIOS_SET_DEFAULT(type17.manufacturer, \"KINGSTON\");|SMBIOS_SET_DEFAULT(type17.manufacturer, \"${memory_manufacturer}\");|g" hw/smbios/smbios.c
 
 # CPU specific
@@ -343,7 +347,7 @@ sed -i "s/\"QEMU TCG CPU version/\"TCG CPU version/g" target/i386/cpu.c
 
 grep -q "do this once" hw/i2c/smbus_eeprom.c
 if [ $? -ne 0 ]; then
-    sed -i 's/for (i = 0; i < nb_eeprom/\/\/do this once\n#include<stdio.h>\neeprom_buf[0]=0x92;\neeprom_buf[1]=0x10;\neeprom_buf[2]=0x0B;\neeprom_buf[3]=0x03;\neeprom_buf[4]=0x04;\neeprom_buf[5]=0x21;\neeprom_buf[6]=0x02;\neeprom_buf[7]=0x09;\neeprom_buf[8]=0x03;\neeprom_buf[9]=0x52;\neeprom_buf[0x0a]=0x01;\neeprom_buf[0x0b]=0x08;\neeprom_buf[0x0c]=0x0A;\neeprom_buf[0x0d]=0x00;\neeprom_buf[0x0e]=0xFE;\neeprom_buf[0x0f]=0x00;\neeprom_buf[0x10]=0x5A;\neeprom_buf[0x11]=0x78;\neeprom_buf[0x12]=0x5A;\neeprom_buf[0x13]=0x30;\neeprom_buf[0x14]=0x5A;\neeprom_buf[0x15]=0x11;\neeprom_buf[0x16]=0x0E;\neeprom_buf[0x17]=0x81;\neeprom_buf[0x18]=0x20;\neeprom_buf[0x19]=0x08;\neeprom_buf[0x1a]=0x3C;\neeprom_buf[0x1b]=0x3C;\neeprom_buf[0x1c]=0x00;\neeprom_buf[0x1d]=0xF0;\neeprom_buf[0x1e]=0x83;\neeprom_buf[0x1f]=0x81;\neeprom_buf[0x3c]=0x0F;\neeprom_buf[0x3d]=0x11;\neeprom_buf[0x3e]=0x65;\neeprom_buf[0x3f]=0x00;\neeprom_buf[0x70]=0x00;\neeprom_buf[0x71]=0x00;\neeprom_buf[0x72]=0x00;\neeprom_buf[0x73]=0x00;\neeprom_buf[0x74]=0x00;\neeprom_buf[0x75]=0x01;\neeprom_buf[0x76]=0x98;\neeprom_buf[0x77]=0x07;\neeprom_buf[0x78]=0x25;\neeprom_buf[0x79]=0x18;\neeprom_buf[0x7a]=0x20;\neeprom_buf[0x7b]=0x25;\nsrand(time(NULL));\nint rr=rand()%10000;\neeprom_buf[0x7c]=rr>>8;\neeprom_buf[0x7d]=rr;\neeprom_buf[0x7e]=0xB3;\neeprom_buf[0x7f]=0x21;\neeprom_buf[0x80]=0x4B;\neeprom_buf[0x81]=0x48;\neeprom_buf[0x82]=0x58;\neeprom_buf[0x83]=0x31;\neeprom_buf[0x84]=0x36;\neeprom_buf[0x85]=0x30;\neeprom_buf[0x86]=0x30;\neeprom_buf[0x87]=0x43;\neeprom_buf[0x88]=0x39;\neeprom_buf[0x89]=0x53;\neeprom_buf[0x8a]=0x33;\neeprom_buf[0x8b]=0x4C;\neeprom_buf[0x8c]=0x2F;\neeprom_buf[0x8d]=0x38;\neeprom_buf[0x8e]=0x47;\neeprom_buf[0x8f]=0x20;\neeprom_buf[0x90]=0x20;\neeprom_buf[0x91]=0x20;\neeprom_buf[0x92]=0x00;\neeprom_buf[0x93]=0x00;\neeprom_buf[0x94]=0x00;\neeprom_buf[0x95]=0x00;\neeprom_buf[0xfe]=0x00;\neeprom_buf[0xff]=0x5A;\nfor (i = 0; i < nb_eeprom/g' hw/i2c/smbus_eeprom.c
+    sed -i 's/for (i = 0; i < nb_eeprom/\/\/do this once\n#include<stdio.h>\neeprom_buf[0]=0x92;\neeprom_buf[1]=0x10;\neeprom_buf[2]=0x0B;\neeprom_buf[3]=0x03;\neeprom_buf[4]=0x06;\neeprom_buf[5]=0x21;\neeprom_buf[6]=0x02;\neeprom_buf[7]=0x09;\neeprom_buf[8]=0x03;\neeprom_buf[9]=0x52;\neeprom_buf[0x0a]=0x01;\neeprom_buf[0x0b]=0x08;\neeprom_buf[0x0c]=0x0A;\neeprom_buf[0x0d]=0x00;\neeprom_buf[0x0e]=0xFE;\neeprom_buf[0x0f]=0x00;\neeprom_buf[0x10]=0x5A;\neeprom_buf[0x11]=0x78;\neeprom_buf[0x12]=0x5A;\neeprom_buf[0x13]=0x30;\neeprom_buf[0x14]=0x5A;\neeprom_buf[0x15]=0x11;\neeprom_buf[0x16]=0x0E;\neeprom_buf[0x17]=0x81;\neeprom_buf[0x18]=0x20;\neeprom_buf[0x19]=0x08;\neeprom_buf[0x1a]=0x3C;\neeprom_buf[0x1b]=0x3C;\neeprom_buf[0x1c]=0x00;\neeprom_buf[0x1d]=0xF0;\neeprom_buf[0x1e]=0x83;\neeprom_buf[0x1f]=0x81;\neeprom_buf[0x3c]=0x0F;\neeprom_buf[0x3d]=0x11;\neeprom_buf[0x3e]=0x65;\neeprom_buf[0x3f]=0x00;\neeprom_buf[0x70]=0x00;\neeprom_buf[0x71]=0x00;\neeprom_buf[0x72]=0x00;\neeprom_buf[0x73]=0x00;\neeprom_buf[0x74]=0x00;\neeprom_buf[0x75]=0x01;\neeprom_buf[0x76]=0x98;\neeprom_buf[0x77]=0x07;\neeprom_buf[0x78]=0x25;\neeprom_buf[0x79]=0x18;\neeprom_buf[0x7a]=0x00;\neeprom_buf[0x7b]=0x00;\neeprom_buf[0x7c]=0x00;\neeprom_buf[0x7d]=0x00;\neeprom_buf[0x7e]=0x3D;\neeprom_buf[0x7f]=0xA7;\neeprom_buf[0x80]=0x4B;\neeprom_buf[0x81]=0x48;\neeprom_buf[0x82]=0x58;\neeprom_buf[0x83]=0x31;\neeprom_buf[0x84]=0x36;\neeprom_buf[0x85]=0x30;\neeprom_buf[0x86]=0x30;\neeprom_buf[0x87]=0x43;\neeprom_buf[0x88]=0x39;\neeprom_buf[0x89]=0x53;\neeprom_buf[0x8a]=0x33;\neeprom_buf[0x8b]=0x4C;\neeprom_buf[0x8c]=0x2F;\neeprom_buf[0x8d]=0x33;\neeprom_buf[0x8e]=0x32;\neeprom_buf[0x8f]=0x47;\neeprom_buf[0x90]=0x20;\neeprom_buf[0x91]=0x20;\neeprom_buf[0x92]=0x00;\neeprom_buf[0x93]=0x00;\neeprom_buf[0x94]=0x00;\neeprom_buf[0x95]=0x00;\neeprom_buf[0xfe]=0x00;\neeprom_buf[0xff]=0x5A;\nfor (i = 0; i < nb_eeprom/g' hw/i2c/smbus_eeprom.c  #添加内存 DDR3L 8G的默认spd信息，序列号0000000不处理
     echo "hw/i2c/smbus_eeprom.c processed (one-time)."
 else
     echo "hw/i2c/smbus_eeprom.c already processed. Skipping."
@@ -362,6 +366,7 @@ grep -q "do this once" hw/i386/acpi-build.c
 if [ $? -ne 0 ]; then
     sed -i '/static void build_dbg_aml(Aml \*table)/,/ /s/{/{\n      return;\/\/do this once/g' hw/i386/acpi-build.c
 #   sed -i 's/dev = aml_device("PCI0");/aml_append(sb_scope, aml_name_decl("OSYS", aml_int(0x03E8)));\n\tAml *osi = aml_if(aml_equal(aml_call1("_OSI", aml_string("Windows 2012")), aml_int(1)));\n\taml_append(osi, aml_store(aml_int(0x07DC), aml_name("OSYS")));\n\taml_append(sb_scope, osi);\n\tosi = aml_if(aml_equal(aml_call1("_OSI",aml_string("Windows 2013")), aml_int(1)));\n\taml_append(osi, aml_store(aml_int(0x07DD), aml_name("OSYS")));\n\taml_append(sb_scope, osi);\n\taml_append(sb_scope, aml_name_decl("_TZ", aml_int(0x03E8)));\n\taml_append(sb_scope, aml_name_decl("_PTS", aml_int(0x03E8)));\n\tdev = aml_device("PCI0");/g' hw/i386/acpi-build.c
+    sed -i 's/dev = aml_device("PCI0");/aml_append(sb_scope, aml_name_decl("_TZ", aml_int(0x03E8)));\n\taml_append(sb_scope, aml_name_decl("_PTS", aml_int(0x03E8)));\n\tdev = aml_device("PCI0");/g' hw/i386/acpi-build.c
     sed -i '/create fw_cfg node/,/}/s/}/}*\//g' hw/i386/acpi-build.c
     sed -i '/create fw_cfg node/,/}/s/{/\/*{/g' hw/i386/acpi-build.c
     echo "hw/i386/acpi/build.c processed (one-time)."

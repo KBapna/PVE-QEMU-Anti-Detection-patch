@@ -1,10 +1,10 @@
 diff -Naur a/edk2patch.sh b/edk2patch.sh
---- a/edk2patch.sh      2025-10-17 21:24:12.880175975 +0530
-+++ b/edk2patch.sh      2025-10-17 21:24:55.111046087 +0530
-@@ -320,93 +320,3 @@
- echo "  $file_QemuBootOrderLib"
- echo "\"VMMBootOrder%04x\"                                -> \"BootOrder%04x\""
- sed -i "$file_QemuBootOrderLib" -Ee "s/\"VMMBootOrder%04x\"/\"BootOrder%04x\"/"
+--- a/edk2patch.sh      2025-10-18 05:18:49.704774612 +0530
++++ b/edk2patch.sh      2025-10-18 05:20:17.694569688 +0530
+@@ -323,103 +323,3 @@
+ get_new_string $(shuf -i 5-7 -n 1) 3
+ echo "\"VMMBootOrder%04x\"                                -> \"${prefix}${suffix}%04x\""
+ sed -i "$file_QemuBootOrderLib" -Ee "s/\"VMMBootOrder%04x\"/\"${prefix}${suffix}%04x\"/"
 -
 -read -p $'Continue? [y/\e[1mN\e[0m]> ' -n 1 -r
 -if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -38,7 +38,7 @@ diff -Naur a/edk2patch.sh b/edk2patch.sh
 -    --define TPM2_ENABLE=TRUE
 -}
 -
--if [[ -f "${VARS_DEST}" ]]; then
+-if [[ -f "$VARS_DEST" ]]; then
 -  echo -e "${EDK2_DEST}/\e[1m${VARS_FILE}\e[0m found."
 -  read -p $'Rebuild? [y/\e[1mN\e[0m]> ' -n 1 -r
 -  if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -56,6 +56,16 @@ diff -Naur a/edk2patch.sh b/edk2patch.sh
 -qemu-img convert -f raw -O qcow2 Build/OvmfX64/RELEASE_GCC5/FV/OVMF_VARS.fd $VARS_DEST
 -echo "$CODE_DEST"
 -echo "$VARS_DEST"
+-
+-read -p $'Clear EFI variables? [Y/\e[1mn\e[0m]> ' -n 1 -r
+-if [[ $REPLY =~ ^[Nn]$ ]]; then
+-  echo ""
+-else
+-  echo ""
+-  cp -f "$VARS_DEST" "$VARS_DEST_2"
+-  echo "$VARS_DEST_2"
+-  exit 0
+-fi
 -
 -
 -readonly URL="https://raw.githubusercontent.com/microsoft/secureboot_objects/main/PreSignedObjects"
@@ -84,7 +94,7 @@ diff -Naur a/edk2patch.sh b/edk2patch.sh
 -done
 -
 -#  --secure-boot \
--virt-fw-vars --input "/usr/share/edk2/ovmf/OVMF_VARS_4M.empty.qcow2" --output "/usr/share/edk2/ovmf/OVMF_VARS_4M.patched.qcow2" \
+-virt-fw-vars --input "$VARS_DEST" --output "$VARS_DEST_2" \
 -  --set-pk "$UUID" ms_pk_oem.der \
 -  --add-kek "$UUID" ms_kek_mscorp_2011.der \
 -  --add-kek "$UUID" ms_kek_mscorp_2023.der \

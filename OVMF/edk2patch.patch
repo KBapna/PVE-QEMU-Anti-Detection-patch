@@ -1,9 +1,10 @@
---- a/edk2patch.sh	2025-08-24 02:57:59.664345290 +0530
-+++ b/edk2patch.sh	2025-08-24 02:58:28.085573413 +0530
-@@ -225,40 +225,3 @@
- echo "  $file_ShellPkg"
- echo "\"EDK II\"                             -> \"American Megatrends Inc.\""
-   sed -i "$file_ShellPkg" -Ee "s/\"EDK II\"/\"American Megatrends Inc.\"/"
+diff -Naur a/edk2patch.sh b/edk2patch.sh
+--- a/edk2patch.sh      2025-10-17 21:24:12.880175975 +0530
++++ b/edk2patch.sh      2025-10-17 21:24:55.111046087 +0530
+@@ -320,93 +320,3 @@
+ echo "  $file_QemuBootOrderLib"
+ echo "\"VMMBootOrder%04x\"                                -> \"BootOrder%04x\""
+ sed -i "$file_QemuBootOrderLib" -Ee "s/\"VMMBootOrder%04x\"/\"BootOrder%04x\"/"
 -
 -read -p $'Continue? [y/\e[1mN\e[0m]> ' -n 1 -r
 -if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -18,26 +19,79 @@
 -export EDK_TOOLS_PATH="${WORKSPACE}/BaseTools"
 -export CONF_PATH="${WORKSPACE}/Conf"
 -
--echo "Building BaseTools (EDK II build tools)..."
--make -C BaseTools; source edksetup.sh
+-build_firmware() {
+-  echo "Building BaseTools (EDK II build tools)..."
+-  make -C BaseTools; source edksetup.sh
+-  echo "Compiling OVMF with Secure Boot and TPM support..."
+-  build \
+-    -a X64 \
+-    -p OvmfPkg/OvmfPkgX64.dsc \
+-    -b RELEASE \
+-    -t GCC5 \
+-    -n 0 \
+-    -s \
+-    -q \
+-    --define SECURE_BOOT_ENABLE=TRUE \
+-    --define TPM_CONFIG_ENABLE=TRUE \
+-    --define TPM_ENABLE=TRUE \
+-    --define TPM1_ENABLE=TRUE \
+-    --define TPM2_ENABLE=TRUE
+-}
 -
--echo "Compiling OVMF firmware with Secure Boot and TPM support..."
--build \
--  -a X64 \
--  -p OvmfPkg/OvmfPkgX64.dsc \
--  -b RELEASE \
--  -t GCC5 \
--  -n 0 \
--  -s \
--  -q \
--  --define SECURE_BOOT_ENABLE=TRUE \
--  --define TPM_CONFIG_ENABLE=TRUE \
--  --define TPM_ENABLE=TRUE \
--  --define TPM1_ENABLE=TRUE \
--  --define TPM2_ENABLE=TRUE
+-if [[ -f "${VARS_DEST}" ]]; then
+-  echo -e "${EDK2_DEST}/\e[1m${VARS_FILE}\e[0m found."
+-  read -p $'Rebuild? [y/\e[1mN\e[0m]> ' -n 1 -r
+-  if [[ $REPLY =~ ^[Yy]$ ]]; then
+-    echo ""
+-    build_firmware
+-  else
+-    echo ""
+-  fi
+-else
+-  build_firmware
+-fi
 -
 -sudo mkdir -p "$EDK2_DEST"
--sudo cp -f "Build/OvmfX64/RELEASE_GCC5/FV/OVMF_CODE.fd" "$CODE_DEST"
--sudo cp -f "Build/OvmfX64/RELEASE_GCC5/FV/OVMF_VARS.fd" "$VARS_DEST"
+-qemu-img convert -f raw -O qcow2 Build/OvmfX64/RELEASE_GCC5/FV/OVMF_CODE.fd $CODE_DEST
+-qemu-img convert -f raw -O qcow2 Build/OvmfX64/RELEASE_GCC5/FV/OVMF_VARS.fd $VARS_DEST
 -echo "$CODE_DEST"
 -echo "$VARS_DEST"
+-
+-
+-readonly URL="https://raw.githubusercontent.com/microsoft/secureboot_objects/main/PreSignedObjects"
+-readonly UUID="77fa9abd-0359-4d32-bd60-28f4e78f784b"
+-
+-cd "$SCRIPT_DIR"
+-WORK_DIR="$(pwd)/work"
+-mkdir -p "$WORK_DIR"
+-cp -f "redhat.json" "$WORK_DIR/redhat.json"
+-cd "$WORK_DIR"
+-
+-declare -A CERTS=(
+-  ["ms_pk_oem.der"]="$URL/PK/Certificate/WindowsOEMDevicesPK.der"
+-  ["ms_kek_mscorp_2011.der"]="$URL/KEK/Certificates/MicCorKEKCA2011_2011-06-24.der"
+-  ["ms_kek_mscorp_2023.der"]="$URL/KEK/Certificates/microsoft%20corporation%20kek%202k%20ca%202023.der"
+-  ["ms_db_mscorp_2011.der"]="$URL/DB/Certificates/MicCorUEFCA2011_2011-06-27.der"
+-  ["ms_db_windows_2011.der"]="$URL/DB/Certificates/MicWinProPCA2011_2011-10-19.der"
+-  ["ms_db_mscorp_2023.der"]="$URL/DB/Certificates/microsoft%20uefi%20ca%202023.der"
+-  ["ms_db_windows_2023.der"]="$URL/DB/Certificates/windows%20uefi%20ca%202023.der"
+-  ["ms_db_optionrom_2023.der"]="$URL/DB/Certificates/microsoft%20option%20rom%20uefi%20ca%202023.der"
+-  ["dbxupdate_x64.bin"]="https://uefi.org/sites/default/files/resources/dbxupdate_x64.bin"
+-)
+-
+-for file in "${!CERTS[@]}"; do
+-  wget -q -O "$file" "${CERTS[$file]}"
+-done
+-
+-#  --secure-boot \
+-virt-fw-vars --input "/usr/share/edk2/ovmf/OVMF_VARS_4M.empty.qcow2" --output "/usr/share/edk2/ovmf/OVMF_VARS_4M.patched.qcow2" \
+-  --set-pk "$UUID" ms_pk_oem.der \
+-  --add-kek "$UUID" ms_kek_mscorp_2011.der \
+-  --add-kek "$UUID" ms_kek_mscorp_2023.der \
+-  --add-db "$UUID" ms_db_mscorp_2011.der \
+-  --add-db "$UUID" ms_db_windows_2011.der \
+-  --add-db "$UUID" ms_db_mscorp_2023.der \
+-  --add-db "$UUID" ms_db_windows_2023.der \
+-  --add-db "$UUID" ms_db_optionrom_2023.der \
+-  --set-dbx dbxupdate_x64.bin \
+-  --set-json redhat.json

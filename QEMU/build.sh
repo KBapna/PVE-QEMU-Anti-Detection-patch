@@ -5,8 +5,10 @@ wget https://github.com/lixiaoliu666/pve-anti-detection/raw/refs/heads/main/hpet
 wget https://raw.githubusercontent.com/lixiaoliu666/pve-anti-detection/refs/heads/9.2.0-6/smbios.h
 wget https://raw.githubusercontent.com/lixiaoliu666/pve-anti-detection/refs/heads/9.2.0-6/smbios.c
 wget https://github.com/Ape-xCV/Nika-Read-Only/raw/refs/heads/main/qemupatch.sh
-wget https://github.com/Ape-xCV/Nika-Read-Only/raw/refs/heads/main/ssdt1.aml
-wget https://github.com/Ape-xCV/Nika-Read-Only/raw/refs/heads/main/ssdt2.aml
+wget https://github.com/Ape-xCV/Nika-Read-Only/raw/refs/heads/main/ssdt1.dsl
+wget https://github.com/Ape-xCV/Nika-Read-Only/raw/refs/heads/main/ssdt2.dsl
+iasl ssdt1.dsl
+iasl ssdt2.dsl
 xxd -i ssdt1.aml > ssdt1.h
 xxd -i ssdt2.aml > ssdt2.h
 xxd -i hpet.aml > hpet.h
@@ -38,6 +40,6 @@ bash sedpatch.sh
 git diff > qemu-autoGenPatch.patch
 cp qemu-autoGenPatch.patch ../
 cd ..
-rm ../hpet.aml ../ssdt1.aml ../ssdt2.aml ../hpet.h ../ssdt1.h ../ssdt2.h ../qemupatch.sh ../smbios.c ../smbios.h
+rm ../hpet.aml ../ssdt1.aml ../ssdt1.dsl ../ssdt2.aml ../ssdt2.dsl ../hpet.h ../ssdt1.h ../ssdt2.h ../qemupatch.sh ../smbios.c ../smbios.h
 mk-build-deps --install
 make

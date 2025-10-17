@@ -124,10 +124,10 @@ machine: pc-q35-9.2+pve1,enable-s3=1,enable-s4=1
 apt reinstall pve-qemu-kvm
 apt reinstall pve-edk2-firmware-ovmf
 ```
-## Detections (As of 08/09/2025)
+## Detections (As of 18/10/2025)
 - HYPER-V = OFF
 ### [VM-Aware](https://github.com/kernelwernel/VMAware)
-<img width="399" height="632" alt="image" src="https://github.com/user-attachments/assets/668f21f6-2bda-46b3-ac55-edc41de602b9" />
+<img width="313" height="736" alt="image" src="https://github.com/user-attachments/assets/48a51ae2-46c7-40f3-91dd-35e211260b94" />
 
 ### [PaFish](https://github.com/a0rtega/pafish)
 <img width="287" height="536" alt="image" src="https://github.com/user-attachments/assets/9ea42898-55e8-4de5-bce1-2c9d0f68bf1b" />

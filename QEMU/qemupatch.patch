@@ -1,7 +1,7 @@
 diff -Naur a/qemupatch.sh b/qemupatch.sh
---- a/qemupatch.sh      2025-10-17 16:35:17.893441100 +0530
-+++ b/qemupatch.sh      2025-10-17 16:36:02.569292725 +0530
-@@ -1648,32 +1648,3 @@
+--- a/qemupatch.sh      2025-11-06 17:45:06.127225048 +0530
++++ b/qemupatch.sh      2025-11-06 17:45:42.430155800 +0530
+@@ -1649,32 +1649,3 @@
  sed -i "$file_kvm" -Ee "s/\"XenVMMXenVMM\"/\"\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/"
  echo "KVMKVMKVM\0\0\0                                   -> GenuineIntel"
  sed -i "$file_kvm" -Ee "s/KVMKVMKVM\\\\0\\\\0\\\\0/GenuineIntel/"
